@@ -31,9 +31,8 @@ public class ReadingProducer {
 			properties.load(reader);
 			properties.put("key.serializer", StringSerializer.class.getName());
 			properties.put("value.serializer", "org.apache.kafka.common.serialization.StringSerializer");
-			
-			String errPath = properties.getProperty("WatchDir") + File.separator 
-					+ properties.getProperty("WatchFile");
+			String fileName = (args.length == 0 ? properties.getProperty("WatchFile") : args[0]+".dat");
+			String errPath = properties.getProperty("WatchDir") + File.separator + fileName;
 			File path = new File(errPath);
 //			System.out.println(Resources.getResourceURL(resource));
 
@@ -45,7 +44,7 @@ public class ReadingProducer {
 			while ((str = bReader.readLine()) != null) {
 				Map<String, String> data = new HashMap<>();
 				int idx = 0;
-				for (String val : str.split("/")) {
+				for (String val : str.split("\\|")) {
 					data.put(features[idx++], val);
 				}
 				JSONObject jsonob = new JSONObject(data);
@@ -56,19 +55,18 @@ public class ReadingProducer {
 						System.out.println("some exception occur!");
 					}
 				});
-				
 				Thread.sleep(Integer.parseInt(properties.getProperty("WatchDT")));
 			}
 			
 			bReader.close();
 			Path oldfile = Paths.get(path.toString());
 			Path newfile = Paths.get(new File(properties.getProperty("WatchDir") + File.separator 
-					+"backup"+File.separator+ properties.getProperty("WatchFile")).toString());
+					+ "backup" + File.separator + fileName).toString());
 			Files.move(oldfile, newfile);
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
-			producer.send(new ProducerRecord<String, String>(TOPIC, properties.getProperty("ExitMessage")));
+//			producer.send(new ProducerRecord<String, String>(TOPIC, properties.getProperty("ExitMessage")));
 			producer.flush();
 			producer.close();
 		}
