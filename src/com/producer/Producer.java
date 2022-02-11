@@ -1,6 +1,7 @@
 package com.producer;
 
 import java.util.Properties;
+import java.util.Scanner;
 
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
@@ -9,6 +10,7 @@ import org.apache.kafka.common.serialization.StringSerializer;
 public class Producer {
 	private static final String TOPIC = "exam";
 	private static final String SERVERS = "localhost:9092";
+	private static final String FIN_MESSAGE = "exit";
 
 	public static void main(String[] args) {
 		Properties prop = new Properties();
@@ -17,25 +19,25 @@ public class Producer {
 		prop.put("value.serializer", "org.apache.kafka.common.serialization.StringSerializer");
 		KafkaProducer<String, String> producer = new KafkaProducer<String, String>(prop);
 
-		int cnt = 1;
 		while(true) {
-			
-			ProducerRecord<String, String> record = new ProducerRecord<>(TOPIC, "message " + cnt++);
+			Scanner sc = new Scanner(System.in);
+			System.out.print("Producing > ");
+			String message = sc.nextLine();
+
+			ProducerRecord<String, String> record = new ProducerRecord<>(TOPIC, message);
 			try {
 				producer.send(record, (metadata, exception) -> {
 					if (exception != null) {
 						System.out.println("some exception occur!");
 					}
 				});
-				Thread.sleep(3000);
 			} catch (Exception e) {
 				System.out.println("exception: " + e);
 			} finally {
 				producer.flush();
 			}
 
-			if (cnt > 10) {
-				producer.send(new ProducerRecord<String, String>(TOPIC, "It's Done!!"));
+			if (FIN_MESSAGE.equals(message)) {
 				producer.close();
 				break;
 			}
