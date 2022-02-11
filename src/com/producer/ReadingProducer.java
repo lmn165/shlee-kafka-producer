@@ -35,7 +35,7 @@ public class ReadingProducer {
 			String errPath = properties.getProperty("WatchDir") + File.separator 
 					+ properties.getProperty("WatchFile");
 			File path = new File(errPath);
-			System.out.println(Resources.getResourceURL(resource));
+//			System.out.println(Resources.getResourceURL(resource));
 
 			BufferedReader bReader = new BufferedReader(new FileReader(path));
 			
@@ -68,7 +68,7 @@ public class ReadingProducer {
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
-			producer.send(new ProducerRecord<String, String>(TOPIC, "exit"));
+			producer.send(new ProducerRecord<String, String>(TOPIC, properties.getProperty("ExitMessage")));
 			producer.flush();
 			producer.close();
 		}
